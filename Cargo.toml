@@ -1,0 +1,61 @@
+[package]
+name = "onedrivelinux"
+description = "A GUI for the OneDrive Client for Linux with multi-account support (egui port of the Python OneDriveGUI)"
+version = "1.0.0"
+edition = "2024"
+license = "GPL-3.0-only"
+rust-version = "1.95"
+readme = "README.md"
+repository = "https://github.com/NunesGodinho/OnedriveGUI-rust"
+
+[[bin]]
+name = "onedrivelinux"
+path = "src/main.rs"
+
+[lints.rust]
+unsafe_code = "forbid"
+
+[lints.clippy]
+dbg_macro = "warn"
+todo = "warn"
+
+[dependencies]
+# UI, same stack and version as PdfCraft. OpenGL (glow) keeps the binary small; winit loads the
+# X11 and Wayland libraries at runtime, so no development headers are needed to build.
+eframe = { version = "0.36", default-features = false, features = ["default_fonts", "glow", "accesskit", "wayland", "x11", "links"] }
+egui = "0.36"
+# Draws the Lucide SVG icons (same loader as PdfCraft).
+egui_extras = { version = "0.36", default-features = false, features = ["svg"] }
+# Native file and folder pickers (XDG desktop portal on Linux).
+rfd = "0.17"
+# System tray through the StatusNotifierItem D-Bus protocol (KDE, GNOME with the AppIndicator
+# extension, XFCE, …). Pure Rust (zbus): no GTK or libappindicator needed.
+ksni = { version = "0.3", default-features = false, features = ["blocking", "async-io"] }
+# Prefer X11 (XWayland) on Wayland sessions with a tray, where winit can't hide a window.
+# Already in the tree through eframe; listed only to name the X11 event-loop extension.
+winit = { version = "0.30", default-features = false, features = ["x11"] }
+# Latest-release checks against the GitHub API: one HTTPS request each, over rustls with the OS's
+# trusted roots (same setup as PdfCraft's update check).
+ureq = { version = "3.4", default-features = false, features = ["rustls-no-provider", "_ring"] }
+rustls-native-certs = "0.8"
+serde_json = "1"
+# Parsing the OneDrive client's output.
+regex = "1"
+# Config files keep their key order when saved.
+indexmap = "2"
+log = "0.4"
+chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
+# Decoding the bundled PNG icons for the window, the tray and the UI.
+image = { version = "0.25", default-features = false, features = ["png"] }
+
+[dev-dependencies]
+# Renders the icons in tests with the same SVG engine egui_extras uses (already in the tree).
+resvg = "=0.45.1"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = true
+
+[profile.dev.package."*"]
+opt-level = 2

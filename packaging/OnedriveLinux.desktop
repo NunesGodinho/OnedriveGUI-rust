@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=OnedriveLinux
+GenericName=OneDrive Client GUI
+Comment=A GUI for the OneDrive Client for Linux, with multi-account support
+Exec=onedrivelinux
+TryExec=onedrivelinux
+Icon=OnedriveLinux
+Terminal=false
+Categories=Network;FileTransfer;
+Keywords=OneDrive;Microsoft;SharePoint;sync;cloud;
+StartupNotify=true
+StartupWMClass=OnedriveLinux

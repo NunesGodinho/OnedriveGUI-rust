@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.onedrivelinux</id>
+  <name>OnedriveLinux</name>
+  <summary>A GUI for the OneDrive Client for Linux, with multi-account support</summary>
+  <metadata_license>MIT</metadata_license>
+  <project_license>GPL-3.0-only</project_license>
+  <description>
+    <p>
+      Manage and monitor several OneDrive and SharePoint accounts synced by the OneDrive Client
+      for Linux (abraunegg/onedrive): start and stop sync, follow transfers live, and edit each
+      account's client options. A Rust and egui port of the Python OneDriveGUI.
+    </p>
+  </description>
+  <launchable type="desktop-id">OnedriveLinux.desktop</launchable>
+  <provides>
+    <binary>onedrivelinux</binary>
+  </provides>
+</component>
