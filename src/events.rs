@@ -39,6 +39,8 @@ pub enum AppEvent {
     /// Library name → drive id.
     SharePointLibraries(IndexMap<String, String>),
     ClientVersion(ClientVersion),
+    /// The desktop's light/dark preference changed (`None`: no preference).
+    SystemTheme(Option<egui::Theme>),
 }
 
 /// The sending half, cheap to clone into any thread.

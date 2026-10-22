@@ -11,6 +11,49 @@ const SECTION: &str = "SETTINGS";
 
 pub const DEBUG_LEVELS: [&str; 5] = ["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"];
 
+/// The look of the windows.
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
+pub enum Theme {
+    /// Follow the desktop's light/dark preference.
+    #[default]
+    System,
+    Light,
+    Dark,
+}
+
+impl Theme {
+    pub const ALL: [Theme; 3] = [Theme::System, Theme::Light, Theme::Dark];
+
+    pub fn label(self) -> &'static str {
+        match self {
+            Theme::System => "System",
+            Theme::Light => "Light",
+            Theme::Dark => "Dark",
+        }
+    }
+
+    /// The value in the settings file.
+    fn key(self) -> &'static str {
+        match self {
+            Theme::System => "system",
+            Theme::Light => "light",
+            Theme::Dark => "dark",
+        }
+    }
+
+    fn parse(value: &str) -> Option<Theme> {
+        Theme::ALL.into_iter().find(|t| t.key().eq_ignore_ascii_case(value.trim()))
+    }
+
+    pub fn preference(self) -> egui::ThemePreference {
+        match self {
+            Theme::System => egui::ThemePreference::System,
+            Theme::Light => egui::ThemePreference::Light,
+            Theme::Dark => egui::ThemePreference::Dark,
+        }
+    }
+}
+
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct GuiSettings {
     pub start_minimized: bool,
@@ -28,6 +71,7 @@ pub struct GuiSettings {
     /// The OneDrive client program (`onedrive` on the PATH by default).
     pub client_bin_path: String,
     pub autostart_enabled: bool,
+    pub theme: Theme,
     /// Every key read from the file, so unknown ones survive a save.
     raw: Section,
 }
@@ -46,6 +90,7 @@ impl Default for GuiSettings {
             debug_level: "DEBUG".into(),
             client_bin_path: "onedrive".into(),
             autostart_enabled: false,
+            theme: Theme::System,
             raw: Section::new(),
         }
     }
@@ -80,6 +125,7 @@ impl GuiSettings {
             debug_level: if DEBUG_LEVELS.contains(&level.as_str()) { level } else { d.debug_level.clone() },
             client_bin_path: text("client_bin_path", &d.client_bin_path),
             autostart_enabled: flag("autostart_enabled", d.autostart_enabled),
+            theme: raw.get("theme").and_then(|v| Theme::parse(v)).unwrap_or(d.theme),
             raw,
         }
     }
@@ -105,6 +151,7 @@ impl GuiSettings {
             ("debug_level", self.debug_level.clone()),
             ("client_bin_path", self.client_bin_path.clone()),
             ("autostart_enabled", b(self.autostart_enabled)),
+            ("theme", self.theme.key().to_string()),
         ] {
             s.insert(k.to_string(), v);
         }
@@ -136,5 +183,15 @@ mod tests {
         // Missing keys take the defaults.
         assert!(s.save_debug);
         assert_eq!(s.log_backup_count, 3);
+        assert_eq!(s.theme, Theme::System);
+    }
+
+    #[test]
+    fn theme_is_read() {
+        let read = |v: &str| GuiSettings::from_section(Ini::parse(&format!("[SETTINGS]\ntheme = {v}\n")).sections["SETTINGS"].clone()).theme;
+        assert_eq!(read("light"), Theme::Light);
+        assert_eq!(read("Dark"), Theme::Dark);
+        assert_eq!(read("system"), Theme::System);
+        assert_eq!(read("purple"), Theme::System);
     }
 }

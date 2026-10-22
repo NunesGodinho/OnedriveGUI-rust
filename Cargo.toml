@@ -31,6 +31,8 @@ rfd = "0.17"
 # System tray through the StatusNotifierItem D-Bus protocol (KDE, GNOME with the AppIndicator
 # extension, XFCE, …). Pure Rust (zbus): no GTK or libappindicator needed.
 ksni = { version = "0.3", default-features = false, features = ["blocking", "async-io"] }
+# Reads the desktop's light/dark preference from the XDG portal (already in the tree through ksni).
+zbus = { version = "5", default-features = false, features = ["async-io", "blocking-api"] }
 # Prefer X11 (XWayland) on Wayland sessions with a tray, where winit can't hide a window.
 # Already in the tree through eframe; listed only to name the X11 event-loop extension.
 winit = { version = "0.30", default-features = false, features = ["x11"] }

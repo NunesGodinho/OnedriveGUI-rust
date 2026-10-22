@@ -19,6 +19,8 @@ between the two without losing your profiles.
 - Profile settings for the client options, grouped as in the original: monitored files, sync options,
   excluded files, selective sync (`sync_list`), webhooks and logging. Options that don't work
   together are disabled, and there are tooltips for most options.
+- Light, dark or system theme (Settings › Appearance › Theme). *System* follows the desktop's
+  light/dark setting, also when it changes while the app runs.
 - Auto-sync selected profiles when the GUI starts. Optionally start the GUI on login (XDG autostart).
 - A system tray icon that shows the combined state (idle, syncing, stopped, error), with a tooltip
   listing every profile's status and a Show/Hide, Settings and Quit menu.

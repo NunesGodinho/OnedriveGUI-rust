@@ -25,6 +25,14 @@ pub fn show(app: &mut App, ui: &mut Ui) {
             transfer_list(app, ui);
         }
     });
+    window_border(ui.ctx());
+}
+
+/// A 1-pixel black line around the window's edge, painted above the panels.
+fn window_border(ctx: &egui::Context) {
+    let pixel = 1.0 / ctx.pixels_per_point();
+    let painter = ctx.layer_painter(egui::LayerId::new(egui::Order::Foreground, egui::Id::new("window-border")));
+    painter.rect_stroke(ctx.content_rect(), 0.0, egui::Stroke::new(pixel, Color32::BLACK), egui::StrokeKind::Inside);
 }
 
 fn white(text: impl Into<String>) -> RichText {

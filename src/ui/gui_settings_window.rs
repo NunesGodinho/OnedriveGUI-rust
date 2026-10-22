@@ -4,7 +4,7 @@
 use egui::{Align, Layout, RichText, Ui, ViewportBuilder, ViewportId};
 
 use crate::app::App;
-use crate::gui_settings::{DEBUG_LEVELS, GuiSettings};
+use crate::gui_settings::{DEBUG_LEVELS, GuiSettings, Theme};
 use crate::ui::widgets::{OK_TEXT, WARNING_TEXT, pick_file, pick_folder};
 use crate::utils::expand_tilde;
 
@@ -68,6 +68,16 @@ fn contents(app: &mut App, w: &mut GuiSettingsWindow, ui: &mut Ui) {
         });
     });
     group(ui, "Appearance", |ui| {
+        ui.horizontal(|ui| {
+            ui.label("Theme:");
+            egui::ComboBox::from_id_salt("theme").selected_text(d.theme.label()).show_ui(ui, |ui| {
+                for theme in Theme::ALL {
+                    ui.selectable_value(&mut d.theme, theme, theme.label());
+                }
+            });
+        })
+        .response
+        .on_hover_text("Light or dark windows, or follow the desktop's setting (System).");
         ui.checkbox(&mut d.frameless_window, "Frameless window").on_hover_text("Hide the window's title bar; drag the blue header to move it.");
         ui.checkbox(&mut d.combined_start_stop_button, "Combined Start/Stop button");
     });
@@ -116,14 +126,14 @@ fn contents(app: &mut App, w: &mut GuiSettingsWindow, ui: &mut Ui) {
                 if frameless != app.settings.frameless_window {
                     ui.ctx().send_viewport_cmd_to(egui::ViewportId::ROOT, egui::ViewportCommand::Decorations(!frameless));
                 }
-                w.status = Some(save(app, &w.draft));
+                w.status = Some(save(app, &w.draft, ui.ctx()));
             }
         });
     });
 }
 
 /// Save the settings, apply what can change live, and sync the autostart entry.
-fn save(app: &mut App, draft: &GuiSettings) -> (String, bool) {
+fn save(app: &mut App, draft: &GuiSettings, ctx: &egui::Context) -> (String, bool) {
     let client_changed = draft.client_bin() != app.settings.client_bin();
     app.settings = draft.clone();
     if let Err(e) = app.settings.save() {
@@ -133,6 +143,7 @@ fn save(app: &mut App, draft: &GuiSettings) -> (String, bool) {
     if client_changed {
         crate::version::check(app.events.clone(), app.settings.client_bin());
     }
+    app.apply_theme(ctx);
     match crate::autostart::sync(app.settings.autostart_enabled) {
         Ok(()) => ("Settings saved.".into(), false),
         Err(e) => {

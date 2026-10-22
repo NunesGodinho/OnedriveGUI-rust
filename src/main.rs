@@ -17,6 +17,7 @@ mod maintenance;
 mod onedrive_config;
 mod parser;
 mod process;
+mod system_theme;
 mod profiles;
 mod transfers;
 mod tray;

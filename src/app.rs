@@ -90,6 +90,8 @@ pub struct App {
     /// Results of the SharePoint lookups, for the wizard.
     pub sharepoint_sites: Option<Vec<String>>,
     pub sharepoint_libraries: Option<IndexMap<String, String>>,
+    /// The desktop's light/dark preference, used by the "System" theme.
+    system_theme: Option<egui::Theme>,
 }
 
 impl App {
@@ -136,9 +138,20 @@ impl App {
             auto_sync_done: false,
             sharepoint_sites: None,
             sharepoint_libraries: None,
+            system_theme: None,
         };
+        app.apply_theme(&cc.egui_ctx);
+        crate::system_theme::watch(app.events.clone());
         app.update_tray();
         app
+    }
+
+    /// Apply the Theme setting. For "System", egui uses the theme the window reports, else the
+    /// fallback, which follows the desktop's preference read from the portal.
+    pub fn apply_theme(&self, ctx: &egui::Context) {
+        ctx.set_theme(self.settings.theme.preference());
+        let fallback = self.system_theme.unwrap_or(egui::Theme::Dark);
+        ctx.options_mut(|o| o.fallback_theme = fallback);
     }
 
     pub fn client(&self) -> String {
@@ -338,6 +351,10 @@ impl App {
                 }
                 AppEvent::SharePointSites(sites) => self.sharepoint_sites = Some(sites),
                 AppEvent::SharePointLibraries(libs) => self.sharepoint_libraries = Some(libs),
+                AppEvent::SystemTheme(theme) => {
+                    self.system_theme = theme;
+                    self.apply_theme(ctx);
+                }
                 AppEvent::ClientVersion(v) => {
                     self.client_version = Some(v);
                     self.auto_sync();

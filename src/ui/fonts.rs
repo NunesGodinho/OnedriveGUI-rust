@@ -34,19 +34,17 @@ pub fn semibold(size: f32) -> FontId {
     FontId::new(size, FontFamily::Name("semibold".into()))
 }
 
-/// Install the fonts and PdfCraft's text sizes, for both the light and the dark theme.
+/// Install the fonts and PdfCraft's text sizes in both the light and the dark style. Only the
+/// text styles change: each style keeps its own colours.
 pub fn install(ctx: &egui::Context) {
     ctx.set_fonts(definitions());
-    ctx.global_style_mut(|s| {
+    ctx.all_styles_mut(|s| {
         s.text_styles.insert(TextStyle::Body, FontId::proportional(13.0));
         s.text_styles.insert(TextStyle::Button, FontId::proportional(13.0));
         s.text_styles.insert(TextStyle::Small, FontId::proportional(11.0));
         s.text_styles.insert(TextStyle::Heading, semibold(17.0));
         s.text_styles.insert(TextStyle::Monospace, FontId::monospace(13.0));
     });
-    let style = ctx.global_style();
-    ctx.set_style_of(egui::Theme::Light, style.clone());
-    ctx.set_style_of(egui::Theme::Dark, style);
 }
 
 #[cfg(test)]
@@ -60,5 +58,19 @@ mod tests {
         assert_eq!(fonts.families[&egui::FontFamily::Proportional].first().map(String::as_str), Some("Inter"));
         assert_eq!(fonts.families[&egui::FontFamily::Monospace].first().map(String::as_str), Some("JetBrainsMono"));
         assert_eq!(fonts.families[&egui::FontFamily::Name("semibold".into())].first().map(String::as_str), Some("Inter-SemiBold"));
+    }
+
+    /// The text sizes reach both styles without the light style taking the dark colours.
+    #[test]
+    fn light_and_dark_styles_keep_their_colours() {
+        let ctx = egui::Context::default();
+        super::install(&ctx);
+        let light = ctx.style_of(egui::Theme::Light);
+        let dark = ctx.style_of(egui::Theme::Dark);
+        assert!(!light.visuals.dark_mode, "the light style has dark visuals");
+        assert!(dark.visuals.dark_mode);
+        for style in [&light, &dark] {
+            assert_eq!(style.text_styles.get(&egui::TextStyle::Body).map(|f| f.size), Some(13.0));
+        }
     }
 }
